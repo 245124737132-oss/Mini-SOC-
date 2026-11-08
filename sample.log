@@ -1,0 +1,13 @@
+
+2026-11-01 10:00:00 INFO Login successful IP=192.168.1.5
+2026-11-01 10:01:00 WARNING Failed login IP=192.168.1.10
+2026-11-01 10:01:10 WARNING Failed login IP=192.168.1.10
+2026-11-01 10:01:20 WARNING Failed login IP=192.168.1.10
+2026-11-01 10:01:30 WARNING Failed login IP=192.168.1.10
+2026-11-01 10:01:40 WARNING Failed login IP=192.168.1.10
+2026-11-01 10:02:00 INFO Login successful IP=192.168.1.20
+2026-11-01 10:03:00 WARNING Failed login IP=192.168.1.30
+2026-11-01 10:04:00 WARNING Suspicious request GET /search?q=' OR 1=1 -- IP=192.168.1.40
+2026-11-01 10:05:00 WARNING SQL injection attempt GET /login?id=1 UNION SELECT username,password FROM users IP=192.168.1.41
+2026-11-01 10:06:00 WARNING Directory traversal attempt GET /files?name=../../etc/passwd IP=192.168.1.50
+2026-11-01 10:07:00 WARNING Directory traversal attempt GET /download?file=../../../windows/system.ini IP=192.168.1.51

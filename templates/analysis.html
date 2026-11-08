@@ -1,0 +1,552 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini SOC | Log Analysis</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0b1120;
+            color: #e5e7eb;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 245px;
+            flex-shrink: 0;
+            background: #111827;
+            border-right: 1px solid #263449;
+            padding: 28px 18px;
+        }
+
+        .brand {
+            font-size: 23px;
+            font-weight: bold;
+            color: #38bdf8;
+            margin: 0 0 8px;
+        }
+
+        .brand-subtitle {
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 38px;
+        }
+
+        .nav-label {
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin: 25px 12px 10px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 13px 14px;
+            margin: 7px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #1e293b;
+            color: #38bdf8;
+        }
+
+        main {
+            flex: 1;
+            min-width: 0;
+            padding: 35px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            margin: 0 0 9px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .system-status {
+            background: #052e16;
+            color: #86efac;
+            border: 1px solid #166534;
+            border-radius: 20px;
+            padding: 9px 14px;
+            font-size: 12px;
+        }
+
+        .panel {
+            background: #111827;
+            border: 1px solid #263449;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 22px;
+        }
+
+        .panel h2 {
+            font-size: 19px;
+            margin: 0 0 8px;
+        }
+
+        .panel-description {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 23px;
+        }
+
+        .upload-box {
+            border: 2px dashed #475569;
+            border-radius: 12px;
+            padding: 42px 20px;
+            text-align: center;
+            background: #0b1120;
+            transition: 0.2s;
+        }
+
+        .upload-box.dragover {
+            border-color: #38bdf8;
+            background: #102238;
+        }
+
+        .upload-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .upload-box h3 {
+            margin: 8px 0;
+            font-size: 18px;
+        }
+
+        .upload-box p {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .choose-btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 11px 18px;
+            border: 1px solid #0284c7;
+            border-radius: 7px;
+            color: #7dd3fc;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .choose-btn:hover {
+            background: #082f49;
+        }
+
+        .file-info {
+            display: none;
+            margin-top: 18px;
+            padding: 13px;
+            background: #172554;
+            border: 1px solid #1e40af;
+            border-radius: 8px;
+            color: #bfdbfe;
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            background: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: #0369a1;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .message.error {
+            background: #450a0a;
+            color: #fecaca;
+            border: 1px solid #7f1d1d;
+        }
+
+        .message.success {
+            background: #052e16;
+            color: #bbf7d0;
+            border: 1px solid #166534;
+        }
+
+        .message.warning {
+            background: #422006;
+            color: #fde68a;
+            border: 1px solid #854d0e;
+        }
+
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .rule-card {
+            background: #0b1120;
+            border: 1px solid #263449;
+            border-radius: 9px;
+            padding: 17px;
+        }
+
+        .rule-card h3 {
+            font-size: 14px;
+            margin: 0 0 9px;
+        }
+
+        .rule-card p {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .severity {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .high {
+            background: #450a0a;
+            color: #fca5a5;
+        }
+
+        .medium {
+            background: #422006;
+            color: #fcd34d;
+        }
+
+        .info {
+            background: #082f49;
+            color: #7dd3fc;
+        }
+
+        .footer-note {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 750px) {
+            .layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 18px;
+            }
+
+            .brand-subtitle {
+                margin-bottom: 15px;
+            }
+
+            .nav-label {
+                display: none;
+            }
+
+            main {
+                padding: 20px;
+            }
+
+            .rules-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <h2 class="brand">🛡 Mini SOC</h2>
+        <p class="brand-subtitle">Security Operations Center</p>
+
+        <p class="nav-label">Monitoring</p>
+
+        <a href="/">▦ &nbsp; Security Dashboard</a>
+        <a href="/analysis" class="active">⌕ &nbsp; Log Analysis</a>
+
+        <p class="nav-label">System</p>
+        <a href="/#recent-alerts">◷ &nbsp; Alert History</a>
+    </aside>
+
+    <main>
+
+        <div class="topbar">
+            <div>
+                <h1>Log Analysis</h1>
+                <p class="subtitle">
+                    Upload and analyze security logs to identify suspicious activity.
+                </p>
+            </div>
+
+            <div class="system-status">
+                ● &nbsp; Analysis Module
+            </div>
+        </div>
+
+        <section class="panel">
+
+            <h2>Upload Security Logs</h2>
+            <p class="panel-description">
+                Select a log file to begin security event analysis.
+            </p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <div class="message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endwith %}
+
+            <form
+                id="uploadForm"
+                action="{{ url_for('upload') }}"
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                <div class="upload-box" id="dropArea">
+
+                    <div class="upload-icon">📂</div>
+
+                    <h3>Drag and drop your log file here</h3>
+
+                    <p>Or select a file from your computer</p>
+
+                    <label for="logFile" class="choose-btn">
+                        Browse Files
+                    </label>
+
+                    <input
+                        type="file"
+                        id="logFile"
+                        name="file"
+                        accept=".log,.txt"
+                        required
+                    >
+
+                    <p class="footer-note">
+                        Supported formats: .log, .txt |
+                        Maximum size: 2 MB
+                    </p>
+
+                    <div class="file-info" id="fileInfo"></div>
+
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Analyze Log File
+                </button>
+
+            </form>
+
+        </section>
+
+        <section class="panel">
+
+            <h2>Detection Capabilities</h2>
+
+            <p class="panel-description">
+                Current detection rules implemented in the Mini SOC backend.
+            </p>
+
+            <div class="rules-grid">
+
+                <div class="rule-card">
+                    <span class="severity high">HIGH SEVERITY</span>
+                    <h3>Brute Force Activity</h3>
+                    <p>
+                        Detects five or more failed login attempts originating
+                        from the same IP address.
+                    </p>
+                </div>
+
+                <div class="rule-card">
+                    <span class="severity medium">MEDIUM SEVERITY</span>
+                    <h3>Repeated Login Failures</h3>
+                    <p>
+                        Identifies three or four failed login attempts from
+                        the same IP address.
+                    </p>
+                </div>
+
+                <div class="rule-card">
+                    <span class="severity info">LOG MONITORING</span>
+                    <h3>IP Address Extraction</h3>
+                    <p>
+                        Extracts and validates IP addresses from supported
+                        log entries.
+                    </p>
+                </div>
+
+                <div class="rule-card">
+                    <span class="severity info">ALERT MANAGEMENT</span>
+                    <h3>Security Alert Tracking</h3>
+                    <p>
+                        Stores detected alerts in SQLite and allows analysts
+                        to update their investigation status.
+                    </p>
+                </div>
+
+            </div>
+
+            <p class="footer-note">
+                Detection results depend on the log format and rules configured
+                in the backend. Only implemented rules are reported as detections.
+            </p>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+    const fileInput = document.getElementById("logFile");
+    const fileInfo = document.getElementById("fileInfo");
+    const dropArea = document.getElementById("dropArea");
+    const uploadForm = document.getElementById("uploadForm");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const MAX_SIZE = 2 * 1024 * 1024;
+
+    function displayFile(file) {
+        if (!file) return;
+
+        const extension = file.name.split(".").pop().toLowerCase();
+
+        if (!["log", "txt"].includes(extension)) {
+            alert("Please select a .log or .txt file.");
+            fileInput.value = "";
+            fileInfo.style.display = "none";
+            return;
+        }
+
+        if (file.size > MAX_SIZE) {
+            alert("File size exceeds the 2 MB limit.");
+            fileInput.value = "";
+            fileInfo.style.display = "none";
+            return;
+        }
+
+        fileInfo.style.display = "block";
+        fileInfo.textContent =
+            "✓ Selected: " + file.name +
+            " (" + (file.size / 1024).toFixed(2) + " KB)";
+    }
+
+    fileInput.addEventListener("change", function () {
+        displayFile(this.files[0]);
+    });
+
+    dropArea.addEventListener("dragover", function (event) {
+        event.preventDefault();
+        dropArea.classList.add("dragover");
+    });
+
+    dropArea.addEventListener("dragleave", function () {
+        dropArea.classList.remove("dragover");
+    });
+
+    dropArea.addEventListener("drop", function (event) {
+        event.preventDefault();
+        dropArea.classList.remove("dragover");
+
+        const files = event.dataTransfer.files;
+
+        if (files.length > 0) {
+            fileInput.files = files;
+            displayFile(files[0]);
+        }
+    });
+
+    uploadForm.addEventListener("submit", function (event) {
+        if (!fileInput.files.length) {
+            event.preventDefault();
+            alert("Please select a log file first.");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const extension = file.name.split(".").pop().toLowerCase();
+
+        if (!["log", "txt"].includes(extension) || file.size > MAX_SIZE) {
+            event.preventDefault();
+            alert("Please select a valid .log or .txt file under 2 MB.");
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Analyzing Logs...";
+    });
+</script>
+
+</body>
+</html>
